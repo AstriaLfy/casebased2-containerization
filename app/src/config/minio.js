@@ -10,17 +10,25 @@ const minioClient = new Minio.Client({
 
 const BUCKET_NAME = process.env.MINIO_BUCKET || 'mahasiswa-files';
 
-async function ensureBucket() {
-  try {
-    const exists = await minioClient.bucketExists(BUCKET_NAME);
-    if (!exists) {
-      await minioClient.makeBucket(BUCKET_NAME, 'us-east-1');
-      console.log(`✅ MinIO bucket "${BUCKET_NAME}" created`);
-    } else {
-      console.log(`✅ MinIO bucket "${BUCKET_NAME}" already exists`);
+async function ensureBucket(retries = 5, delay = 3000) {
+  for (let i = 1; i <= retries; i++) {
+    try {
+      const exists = await minioClient.bucketExists(BUCKET_NAME);
+      if (!exists) {
+        await minioClient.makeBucket(BUCKET_NAME, 'us-east-1');
+        console.log(`✅ MinIO bucket "${BUCKET_NAME}" created`);
+      } else {
+        console.log(`✅ MinIO bucket "${BUCKET_NAME}" already exists`);
+      }
+      return; // sukses, keluar dari loop
+    } catch (err) {
+      console.warn(`⏳ MinIO belum ready, retry ${i}/${retries}...`);
+      if (i === retries) {
+        console.error('❌ MinIO bucket error:', err.message);
+      } else {
+        await new Promise(res => setTimeout(res, delay));
+      }
     }
-  } catch (err) {
-    console.error('❌ MinIO bucket error:', err);
   }
 }
 

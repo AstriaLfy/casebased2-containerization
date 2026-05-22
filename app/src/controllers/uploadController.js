@@ -33,8 +33,8 @@ exports.create = async (req, res) => {
 
     if (req.file) {
       const ext = path.extname(req.file.originalname);
-      const objectName = `${uuidv4()}${ext}`;
-      
+      const objectName = `${uuidv4()}-${req.file.originalname}`;
+
       await minioClient.putObject(
         BUCKET_NAME,
         objectName,
@@ -63,7 +63,7 @@ exports.update = async (req, res) => {
 
     if (req.file) {
       const ext = path.extname(req.file.originalname);
-      const objectName = `${uuidv4()}${ext}`;
+      const objectName = `${uuidv4()}-${req.file.originalname}`;
 
       await minioClient.putObject(
         BUCKET_NAME,
